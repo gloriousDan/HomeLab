@@ -1,0 +1,50 @@
+log:
+  level: "INFO"
+
+providers:
+  file:
+    directory: /dynamic.yml
+  docker:
+    network: traefik
+    exposedByDefault: false
+
+certificatesResolvers:
+  ncresolver:
+    acme:
+      email: ""
+      storage: /letsencrypt/acme.json
+      dnsChallenge:
+        provider:
+
+  debugresolver:
+    acme:
+      email: ""
+      storage: /tmp/acme.json
+      caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+      httpChallenge:
+        entrypoint: web
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+
+  websecure:
+    address: ":443"
+    http:
+      tls:
+        certResolver: debugresolver
+        domains:
+          - main: "<ONE_DOMAIN>"
+            sans:
+              - "*.<ONE_DOMAIN>"
+          - main: "<SECOND_DOMAIN>"
+            sans:
+              - "*.<SECOND_DOMAIN>"
+
+api:
+  dashboard: true

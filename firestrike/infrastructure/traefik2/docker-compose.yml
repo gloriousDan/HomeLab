@@ -1,0 +1,26 @@
+version: '3.3'
+
+services:
+  traefik:
+    image: traefik:v2.5.6
+    container_name: traefik
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - default
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - "./letsencrypt:/letsencrypt"
+      - "./dynamic.yml:/dynamic.yml"
+      - "./traefik.prod.yml:/etc/traefik/traefik.yml"
+    environment:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - BASE_DOMAIN
+      - BASE_PERSONAL_DOMAIN
+      - DASHBOARD_USER
+networks:
+  default:
+    external:
+      name: traefik
