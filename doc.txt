@@ -1,0 +1,5 @@
+docker-compose files:
+https://chriswiegman.com/2020/01/running-nextcloud-with-docker-and-traefik-2/
+
+acme and secrets config like
+https://doc.traefik.io/traefik/user-guides/docker-compose/acme-dns/
