@@ -1,0 +1,92 @@
+version: '3.3'
+
+volumes:
+  nextcloud-db:
+    driver: local
+  redis:
+    driver: local
+  nextcloud-main:
+    driver: local
+  apps:
+    driver: local
+  config:
+    driver: local
+  data:
+    driver: local
+
+services:
+  # todo replace postgres db with sqlite database
+  db:
+    restart: always
+    image: postgres:14.1
+    networks:
+      - nextcloud
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+    volumes:
+      - nextcloud-db:/var/lib/postgresql/data
+
+  redis:
+    image: redis:6.2.6
+    restart: always
+    networks:
+      - nextcloud
+    volumes:
+      - redis:/var/lib/redis
+
+  cron:
+    image: nextcloud:23.0.0
+    restart: unless-stopped
+    volumes:
+      - nextcloud-main:/var/www/html
+      - apps:/var/www/html/custom_apps
+      - config:/var/www/html/config
+      - data:/var/www/html/data
+    networks:
+      - nextcloud
+    entrypoint: /cron.sh
+
+  nextcloud:
+    image: nextcloud:23.0.0
+    restart: always
+    networks:
+      - default
+      - nextcloud
+    depends_on:
+      - redis
+      - db
+    labels:
+      - traefik.http.routers.nextcloud.middlewares=nextcloud,nc_well_known_redirect,nc_redirect_main_domain
+      - traefik.http.routers.nextcloud.tls.certresolver=ncresolver
+      - traefik.http.routers.nextcloud.rule=Host(`cloud.${BASE_DOMAIN}`) ||
+        Host(`cloud.${BASE_PERSONAL_DOMAIN}`) ||
+        Host(`cloud.${BASE_ALT_DOMAIN}`)
+      - traefik.http.middlewares.nextcloud.headers.customFrameOptionsValue=ALLOW-FROM
+        https://cloud.${BASE_DOMAIN}
+      - traefik.http.middlewares.nextcloud.headers.contentSecurityPolicy=frame-ancestors'self'
+        ${BASE_DOMAIN} *.${BASE_DOMAIN}
+      - traefik.http.middlewares.nextcloud.headers.stsSeconds=155520011
+      - traefik.http.middlewares.nextcloud.headers.stsIncludeSubdomains=true
+      - traefik.http.middlewares.nextcloud.headers.stsPreload=true
+      - traefik.http.middlewares.nc_well_known_redirect.redirectregex.regex=/.well-known/(card|cal)dav
+      - traefik.http.middlewares.nc_well_known_redirect.redirectregex.replacement=/remote.php/dav/
+      - traefik.http.middlewares.nc_redirect_main_domain.redirectregex.regex=^https://cloud.(${BASE_PERSONAL_DOMAIN}|${BASE_ALT_DOMAIN})/(.*)
+      - traefik.http.middlewares.nc_redirect_main_domain.redirectregex.replacement=https://cloud.${BASE_DOMAIN}/$${1}
+      - REDIS_HOST=redis
+      - NEXTCLOUD_TRUSTED_DOMAINS=cloud.${BASE_DOMAIN}
+      - TRUSTED_PROXIES=172.18.0.0/16
+    volumes:
+      - nextcloud-main:/var/www/html
+      - apps:/var/www/html/custom_apps
+      - config:/var/www/html/config
+      - data:/var/www/html/data
+      - /mnt/nfs/ncdata:/mnt/ncdata
+
+networks:
+  default:
+    external:
+      name: traefik
+
+  nextcloud:
+    internal: true
