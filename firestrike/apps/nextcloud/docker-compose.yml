@@ -18,7 +18,7 @@ services:
   # todo replace postgres db with sqlite database
   db:
     restart: always
-    image: postgres:14.1
+    image: postgres:11
     networks:
       - nextcloud
     environment:
@@ -57,6 +57,7 @@ services:
       - redis
       - db
     labels:
+      - traefik.enable=true
       - traefik.http.routers.nextcloud.middlewares=nextcloud,nc_well_known_redirect,nc_redirect_main_domain
       - traefik.http.routers.nextcloud.tls.certresolver=ncresolver
       - traefik.http.routers.nextcloud.rule=Host(`cloud.${BASE_DOMAIN}`) ||
