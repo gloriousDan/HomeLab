@@ -11,6 +11,8 @@ http:
       service: "avv-proxy@file"
 
     dashboard:
+      entryPoints:
+        - "websecure"
       rule: Host(`traefik.{{env "BASE_PERSONAL_DOMAIN"}}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
       service: api@internal
       tls:
@@ -28,7 +30,7 @@ http:
     dashboard_auth:
       basicAuth:
         users:
-          - "{{env "DASHBOARD_USER"}}"
+          - {{env "DASHBOARD_USER"}}
 
   services:
     avv-proxy:
