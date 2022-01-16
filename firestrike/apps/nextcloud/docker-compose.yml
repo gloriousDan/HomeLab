@@ -18,7 +18,7 @@ services:
   # todo replace postgres db with sqlite database
   db:
     restart: always
-    image: postgres:11
+    image: postgres:14
     networks:
       - nextcloud
     environment:
