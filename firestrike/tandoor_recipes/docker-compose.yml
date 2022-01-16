@@ -1,0 +1,77 @@
+version: "3"
+services:
+  litestream_db:
+    image: litestream/litestream:0.3.7
+    restart: always
+    volumes:
+      - ./litestream.yml:/etc/litestream.yml
+      - litestream_db:/db
+    entrypoint: /usr/local/bin/litestream replicate
+
+  web_recipes:
+    image: vabene1111/recipes:1.0.4
+    restart: always
+    env_file:
+      - ./.env
+    volumes:
+      - staticfiles:/opt/recipes/staticfiles
+      - nginx_config:/opt/recipes/nginx/conf.d
+      - ./mediafiles:/opt/recipes/mediafiles
+      - litestream_db:/opt/recipes/db
+    depends_on:
+      - litestream_db
+    networks:
+      - default
+
+  nginx_recipes:
+    image: nginx:1.21-alpine
+    restart: always
+    env_file:
+      - ./.env
+    volumes:
+      - nginx_config:/etc/nginx/conf.d:ro
+      - staticfiles:/static
+      - ./mediafiles:/media
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.recipes.rule=Host(`rezepte.${BASE_DOMAIN}`) ||
+        Host(`rezepte.${BASE_PERSONAL_DOMAIN}`)"
+      - "traefik.http.middlewares.xframe.headers.customresponseheaders.X-Frame-\
+        Options=SAMEORIGIN"
+      - "traefik.http.routers.recipes.middlewares=xframe@docker"
+      - "traefik.http.routers.recipes.tls.certresolver=ncresolver"
+    depends_on:
+      - web_recipes
+    networks:
+      - default
+      - traefik
+
+  static:
+    image: nginx:1.21-alpine
+    restart: unless-stopped
+    networks:
+      - default
+      - traefik
+    labels:
+      - "traefik.http.routers.recipes-static.rule=(Host(`rezepte.${BASE_DOMAIN}\
+        `) || Host(`rezepte.${BASE_PERSONAL_DOMAIN}`)) && Path(`/importer`)"
+      - traefik.http.routers.recipes-static.tls.certresolver=ncresolver
+      - traefik.http.services.recipes-static.loadbalancer.server.port=80
+      - "traefik.http.middlewares.recipes-static-replacepath.replacepath.path=/"
+      - "traefik.http.routers.recipes-static.middlewares=recipes-static-replace\
+        path@docker"
+    volumes:
+      - ./static_content/:/usr/share/nginx/html:ro
+
+networks:
+  default: null
+  traefik:
+    external: true
+
+volumes:
+  nginx_config:
+    driver: local
+  staticfiles:
+    driver: local
+  litestream_db:
+    driver: local

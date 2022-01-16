@@ -1,0 +1,4 @@
+dbs:
+  - path: /db/db.sqlite3
+    replicas:
+      # insert at least one replica definition here
