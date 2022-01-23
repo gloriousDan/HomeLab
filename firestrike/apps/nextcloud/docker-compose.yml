@@ -74,6 +74,7 @@ services:
       - traefik.http.middlewares.nc_well_known_redirect.redirectregex.replacement=/remote.php/dav/
       - traefik.http.middlewares.nc_redirect_main_domain.redirectregex.regex=^https://cloud.(${BASE_PERSONAL_DOMAIN}|${BASE_ALT_DOMAIN})/(.*)
       - traefik.http.middlewares.nc_redirect_main_domain.redirectregex.replacement=https://cloud.${BASE_DOMAIN}/$${1}
+      - traefik.http.middlewares.nextcloud.headers.customFrameOptionsvalue=SAMEORIGIN
       - REDIS_HOST=redis
       - NEXTCLOUD_TRUSTED_DOMAINS=cloud.${BASE_DOMAIN}
       - TRUSTED_PROXIES=172.18.0.0/16
