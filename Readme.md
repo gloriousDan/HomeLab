@@ -3,6 +3,7 @@
 This repo contains the docker compose files for hosting my HomeLab.  
 
 This currently includes:
+* [Traefik](https://traefik.io/) An awesome cloud-native reverse proxy
 * [Nextcloud](https://nextcloud.com/)
 * [Tandoor-recipes](https://docs.tandoor.dev/)
 * A static website which lists public transit departures near my home.  
