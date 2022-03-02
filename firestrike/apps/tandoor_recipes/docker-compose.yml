@@ -9,7 +9,7 @@ services:
     entrypoint: /usr/local/bin/litestream replicate
 
   web_recipes:
-    image: vabene1111/recipes:1.0.8
+    image: vabene1111/recipes:1.1.1
     restart: always
     env_file:
       - ./.env
