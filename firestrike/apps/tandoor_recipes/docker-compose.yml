@@ -1,7 +1,7 @@
 version: "3"
 services:
   litestream_db:
-    image: litestream/litestream:0.3.7
+    image: litestream/litestream:0.3.8
     restart: always
     volumes:
       - ./litestream.yml:/etc/litestream.yml
