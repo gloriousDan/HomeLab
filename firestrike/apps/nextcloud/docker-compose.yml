@@ -36,7 +36,7 @@ services:
       - redis:/var/lib/redis
 
   cron:
-    image: nextcloud:23.0.2
+    image: nextcloud:23.0.3
     restart: unless-stopped
     volumes:
       - nextcloud-main:/var/www/html
@@ -48,7 +48,7 @@ services:
     entrypoint: /cron.sh
 
   nextcloud:
-    image: nextcloud:23.0.2
+    image: nextcloud:23.0.3
     restart: always
     networks:
       - default
