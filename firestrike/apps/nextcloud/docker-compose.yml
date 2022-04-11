@@ -13,6 +13,28 @@ volumes:
     driver: local
   data:
     driver: local
+  db_dumps:
+    driver: local
+  rclone_azure_volume:
+    # To use this install rclone plugin: 
+    # rclone/docker-volume-rclone:amd64 --grant-all-permissions --alias rclone
+    driver: rclone:latest
+    driver_opts:
+      type: azureblob
+      path: $AZURE_BLOB_CONTAINER
+      azureblob-account: $AZURE_BLOB_ACCOUNT
+      azureblob-key: $AZURE_BLOB_KEY
+      allow_other: 'true'
+  rclone_azure_volume_db:
+    # To use this install rclone plugin: 
+    # rclone/docker-volume-rclone:amd64 --grant-all-permissions --alias rclone
+    driver: rclone:latest
+    driver_opts:
+      type: azureblob
+      path: $AZURE_BLOB_CONTAINER_DB
+      azureblob-account: $AZURE_BLOB_ACCOUNT
+      azureblob-key: $AZURE_BLOB_KEY
+      allow_other: 'true'
 
 services:
   # todo replace postgres db with sqlite database
@@ -26,6 +48,9 @@ services:
       - POSTGRES_PASSWORD
     volumes:
       - nextcloud-db:/var/lib/postgresql/data
+      - db_dumps:/tmp/dumps
+    labels:
+      - docker-volume-backup.exec-pre=/bin/sh -c 'pg_dump -U $POSTGRES_USER --inserts nextcloud > /tmp/dumps/dump.sql'
 
   redis:
     image: redis:6.2.6
@@ -34,6 +59,8 @@ services:
       - nextcloud
     volumes:
       - redis:/var/lib/redis
+    labels:
+      - docker-volume-backup-stop-during-backup=service1
 
   cron:
     image: nextcloud:23.0.3
@@ -43,6 +70,8 @@ services:
       - apps:/var/www/html/custom_apps
       - config:/var/www/html/config
       - data:/var/www/html/data
+    labels:
+      - docker-volume-backup-stop-during-backup=service1
     networks:
       - nextcloud
     entrypoint: /cron.sh
@@ -78,12 +107,40 @@ services:
       - REDIS_HOST=redis
       - NEXTCLOUD_TRUSTED_DOMAINS=cloud.${BASE_DOMAIN}
       - TRUSTED_PROXIES=172.18.0.0/16
+      - docker-volume-backup-stop-during-backup=service1
     volumes:
       - nextcloud-main:/var/www/html
       - apps:/var/www/html/custom_apps
       - config:/var/www/html/config
       - data:/var/www/html/data
-      - /mnt/nfs/ncdata:/mnt/ncdata
+
+  backup-rclone:
+    image: offen/docker-volume-backup:v2.15.0
+    restart: always
+    env_file: ./backup.env
+    environment:
+      BACKUP_CRON_EXPRESSION: "0 4 * * 1"
+      BACKUP_RETENTION_DAYS: "14"
+      BACKUP_STOP_CONTAINER_LABEL: service1
+    volumes:
+      - apps:/backup/nc_apps:ro
+      - config:/backup/nc_config:ro
+      - data:/backup/nc_data:ro
+      - rclone_azure_volume:/archive
+      - ./notifications.tmpl:/etc/dockervolumebackup/notifications.d/notifications.tmpl
+
+  backup-rclone-db:
+    image: offen/docker-volume-backup:v2.15.0
+    restart: always
+    env_file: ./backup.env
+    environment:
+      BACKUP_CRON_EXPRESSION: "0 3 * * *"
+      BACKUP_RETENTION_DAYS: "7"
+    volumes:
+      - db_dumps:/backup/nc_db:ro
+      - rclone_azure_volume_db:/archive
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./notifications_db.tmpl:/etc/dockervolumebackup/notifications.d/notifications.tmpl
 
 networks:
   default:

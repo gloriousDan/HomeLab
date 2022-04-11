@@ -1,0 +1,7 @@
+{{ define "title_success" -}}
+✅ Successfully ran backup for nextcloud data, apps and config at {{ .Stats.StartTime | formatTime }}
+{{- end }}
+
+{{ define "title_failure" -}}
+❌ Failure running docker-volume-backup for nextcloud data, apps and config at {{ .Stats.StartTime | formatTime }}
+{{- end }}

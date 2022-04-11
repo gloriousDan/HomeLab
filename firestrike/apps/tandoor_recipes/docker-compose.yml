@@ -51,6 +51,7 @@ services:
     restart: always
     env_file: ./backup.env
     volumes:
+      - ./notifications.tmpl:/etc/dockervolumebackup/notifications.d/notifications.tmpl
       - mediafiles:/backup/tandoor-mediafiles-backup:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - rclone_azure_volume:/archive
