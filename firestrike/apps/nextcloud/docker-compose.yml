@@ -51,7 +51,6 @@ services:
       - db_dumps:/tmp/dumps
     labels:
       - docker-volume-backup.exec-pre=/bin/sh -c 'pg_dump -U $POSTGRES_USER --inserts nextcloud > /tmp/dumps/dump.sql'
-      - docker-volume-backup.exec-label=database
 
   redis:
     image: redis:6.2.6
@@ -124,6 +123,7 @@ services:
       BACKUP_RETENTION_DAYS: "14"
       BACKUP_STOP_CONTAINER_LABEL: service1
     volumes:
+      - db_dumps:/backup/nc_db:ro
       - apps:/backup/nc_apps:ro
       - config:/backup/nc_config:ro
       - data:/backup/nc_data:ro
@@ -138,7 +138,6 @@ services:
     environment:
       BACKUP_CRON_EXPRESSION: "0 3 * * *"
       BACKUP_RETENTION_DAYS: "7"
-      EXEC_LABEL: database
     volumes:
       - db_dumps:/backup/nc_db:ro
       - rclone_azure_volume_db:/archive
