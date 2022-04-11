@@ -16,7 +16,7 @@ services:
     volumes:
       - staticfiles:/opt/recipes/staticfiles
       - nginx_config:/opt/recipes/nginx/conf.d
-      - ./mediafiles:/opt/recipes/mediafiles
+      - mediafiles:/opt/recipes/mediafiles
       - litestream_db:/opt/recipes/db
       - ./files/:/opt/recipes/import/
     depends_on:
@@ -32,7 +32,7 @@ services:
     volumes:
       - nginx_config:/etc/nginx/conf.d:ro
       - staticfiles:/static
-      - ./mediafiles:/media
+      - mediafiles:/media
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.recipes.rule=Host(`rezepte.${BASE_DOMAIN}`) || Host(`rezepte.${BASE_PERSONAL_DOMAIN}`)"
@@ -45,20 +45,24 @@ services:
       - default
       - traefik
 
-  static:
-    image: nginx:1.21-alpine
-    restart: unless-stopped
-    networks:
-      - default
-      - traefik
-    labels:
-      - "traefik.http.routers.recipes-static.rule=(Host(`rezepte.${BASE_DOMAIN}`) || Host(`rezepte.${BASE_PERSONAL_DOMAIN}`)) && Path(`/importer`)"
-      - traefik.http.routers.recipes-static.tls.certresolver=ncresolver
-      - traefik.http.services.recipes-static.loadbalancer.server.port=80
-      - "traefik.http.middlewares.recipes-static-replacepath.replacepath.path=/"
-      - "traefik.http.routers.recipes-static.middlewares=recipes-static-replacepath@docker"
+    
+  backup-rclone:
+    image: offen/docker-volume-backup:v2.15.0
+    restart: always
+    env_file: ./backup.env
     volumes:
-      - ./static_content/:/usr/share/nginx/html:ro
+      - type: volume
+        source: mediafiles
+        target: /backup/tandoor-mediafiles-backup:ro
+        read_only: true
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        read_only: true
+      - type: volume
+        source: rclone_azure_volume
+        target: /archive
+
 
 networks:
   default: null
@@ -72,3 +76,15 @@ volumes:
     driver: local
   litestream_db:
     driver: local
+  mediafiles:
+    driver: local
+  rclone_azure_volume:
+    # To use this install rclone plugin: 
+    # rclone/docker-volume-rclone:amd64 --grant-all-permissions --alias rclone
+    driver: rclone
+    driver_opts:
+      type: azureblob
+      path: $AZURE_BLOB_CONTAINER
+      azureblob-account: $AZURE_BLOB_ACCOUNT
+      azureblob-key: $AZURE_BLOB_KEY
+      allow_other: 'true'
