@@ -73,7 +73,7 @@ volumes:
   rclone_azure_volume:
     # To use this install rclone plugin: 
     # rclone/docker-volume-rclone:amd64 --grant-all-permissions --alias rclone
-    driver: rclone:1.58.0
+    driver: rclone:latest
     driver_opts:
       type: azureblob
       path: $AZURE_BLOB_CONTAINER
