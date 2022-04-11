@@ -51,6 +51,7 @@ services:
       - db_dumps:/tmp/dumps
     labels:
       - docker-volume-backup.exec-pre=/bin/sh -c 'pg_dump -U $POSTGRES_USER --inserts nextcloud > /tmp/dumps/dump.sql'
+      - docker-volume-backup.exec-label=database
 
   redis:
     image: redis:6.2.6
@@ -128,6 +129,7 @@ services:
       - data:/backup/nc_data:ro
       - rclone_azure_volume:/archive
       - ./notifications.tmpl:/etc/dockervolumebackup/notifications.d/notifications.tmpl
+      - /var/run/docker.sock:/var/run/docker.sock:ro
 
   backup-rclone-db:
     image: offen/docker-volume-backup:v2.15.0
@@ -136,11 +138,12 @@ services:
     environment:
       BACKUP_CRON_EXPRESSION: "0 3 * * *"
       BACKUP_RETENTION_DAYS: "7"
+      EXEC_LABEL: database
     volumes:
       - db_dumps:/backup/nc_db:ro
       - rclone_azure_volume_db:/archive
-      - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./notifications_db.tmpl:/etc/dockervolumebackup/notifications.d/notifications.tmpl
+      - /var/run/docker.sock:/var/run/docker.sock:ro
 
 networks:
   default:
