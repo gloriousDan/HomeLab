@@ -60,7 +60,7 @@ services:
     volumes:
       - redis:/var/lib/redis
     labels:
-      - docker-volume-backup-stop-during-backup=service1
+      - docker-volume-backup.stop-during-backup=true
 
   cron:
     image: nextcloud:23.0.3
@@ -71,7 +71,7 @@ services:
       - config:/var/www/html/config
       - data:/var/www/html/data
     labels:
-      - docker-volume-backup-stop-during-backup=service1
+      - docker-volume-backup.stop-during-backup=true
     networks:
       - nextcloud
     entrypoint: /cron.sh
@@ -107,7 +107,7 @@ services:
       - REDIS_HOST=redis
       - NEXTCLOUD_TRUSTED_DOMAINS=cloud.${BASE_DOMAIN}
       - TRUSTED_PROXIES=172.18.0.0/16
-      - docker-volume-backup-stop-during-backup=service1
+      - docker-volume-backup.stop-during-backup=true
     volumes:
       - nextcloud-main:/var/www/html
       - apps:/var/www/html/custom_apps
@@ -121,7 +121,6 @@ services:
     environment:
       BACKUP_CRON_EXPRESSION: "0 4 * * 1"
       BACKUP_RETENTION_DAYS: "14"
-      BACKUP_STOP_CONTAINER_LABEL: service1
     volumes:
       - db_dumps:/backup/nc_db:ro
       - apps:/backup/nc_apps:ro
