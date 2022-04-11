@@ -31,7 +31,7 @@ http:
   middlewares:
     redirect-uptime-monitor:
       redirectRegex:
-        regex: "^https://up\\.({{env "BASE_PERSONAL_DOMAIN"}}|{{env "BASE_DOMAIN"}})\\.de"
+        regex: "^https://up\\.({{env "BASE_PERSONAL_DOMAIN"}}|{{env "BASE_DOMAIN"}})"
         replacement: "https://gloriousdan.github.io/Homelab-uptime"
 
     constructAVVRequest:
@@ -54,4 +54,5 @@ http:
     uptime-redirect-noop-service:
       loadBalancer:
         servers:
-          - url: ""  # This service is never hit with a request
+          # This service is never hit with a request
+          - url: ""  
