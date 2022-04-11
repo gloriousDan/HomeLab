@@ -10,6 +10,14 @@ http:
         - constructAVVRequest
       service: "avv-proxy@file"
 
+    uptime-redirect-router:
+      entryPoints:
+        - "websecure"
+      rule: "Host(`up.{{env "BASE_PERSONAL_DOMAIN"}}`) || Host(`up.{{env "BASE_DOMAIN"}}`)"
+      middlewares:
+        - redirect-uptime-monitor@file
+      service: "uptime-redirect-noop-service@file"
+
     dashboard:
       entryPoints:
         - "websecure"
@@ -21,6 +29,11 @@ http:
         - dashboard_auth
 
   middlewares:
+    redirect-uptime-monitor:
+      redirectRegex:
+        regex: "^https://up\\.({{env "BASE_PERSONAL_DOMAIN"}}|{{env "BASE_DOMAIN"}})\\.de"
+        replacement: "https://gloriousdan.github.io/Homelab-uptime"
+
     constructAVVRequest:
       headers:
         customResponseHeaders:
@@ -37,3 +50,8 @@ http:
       loadBalancer:
         servers:
           - url: https://efa.avv-augsburg.de
+
+    uptime-redirect-noop-service:
+      loadBalancer:
+        servers:
+          - url: ""  # This service is never hit with a request

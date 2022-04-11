@@ -17,9 +17,8 @@ services:
       - "./traefik.prod.yml:/etc/traefik/traefik.yml"
     environment:
       - /var/run/docker.sock:/var/run/docker.sock
-      - BASE_DOMAIN
-      - BASE_PERSONAL_DOMAIN
-      - DASHBOARD_USER
+    env_file:
+      - .env
 networks:
   default:
     external:
