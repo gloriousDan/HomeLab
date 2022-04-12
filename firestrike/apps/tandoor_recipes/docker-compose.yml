@@ -50,6 +50,8 @@ services:
     image: offen/docker-volume-backup:v2.15.0
     restart: always
     env_file: ./backup.env
+    environment:
+      EXEC_LABEL: "tandoor-backup"
     volumes:
       - ./notifications.tmpl:/etc/dockervolumebackup/notifications.d/notifications.tmpl
       - mediafiles:/backup/tandoor-mediafiles-backup:ro
