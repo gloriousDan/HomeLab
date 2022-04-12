@@ -50,7 +50,7 @@ services:
       - nextcloud-db:/var/lib/postgresql/data
       - db_dumps:/tmp/dumps
     labels:
-      - docker-volume-backup.exec-pre=/bin/sh -c 'pg_dump -U $POSTGRES_USER --inserts nextcloud > /tmp/dumps/dump.sql'
+      - docker-volume-backup.exec-pre=/bin/sh -c 'pg_dump -U $POSTGRES_USER nextcloud > /tmp/dumps/dump.sql'
       - docker-volume-backup.exec-label=nextcloud_database
 
   redis:
