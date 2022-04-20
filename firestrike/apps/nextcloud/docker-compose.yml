@@ -116,7 +116,7 @@ services:
       - data:/var/www/html/data
 
   backup-rclone:
-    image: offen/docker-volume-backup:v2.15.2
+    image: offen/docker-volume-backup:v2.16.0
     restart: always
     env_file: ./backup.env
     environment:
@@ -134,7 +134,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
   backup-rclone-db:
-    image: offen/docker-volume-backup:v2.15.2
+    image: offen/docker-volume-backup:v2.16.0
     restart: always
     env_file: ./backup.env
     environment:
