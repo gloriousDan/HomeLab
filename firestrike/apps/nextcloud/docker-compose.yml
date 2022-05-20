@@ -64,7 +64,7 @@ services:
       - docker-volume-backup.stop-during-backup=nextcloud
 
   cron:
-    image: nextcloud:24.0.0
+    image: nextcloud:24.0.1
     restart: unless-stopped
     volumes:
       - nextcloud-main:/var/www/html
@@ -78,7 +78,7 @@ services:
     entrypoint: /cron.sh
 
   nextcloud:
-    image: nextcloud:24.0.0
+    image: nextcloud:24.0.1
     restart: always
     networks:
       - default
