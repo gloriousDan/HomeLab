@@ -1,0 +1,50 @@
+{
+	"api": {
+		"credentials": {
+			"email": "insert email"
+		},
+		"session": {
+			"userId": "",
+			"accessToken": "",
+			"refreshToken": ""
+		},
+		"deviceType": "IOS",
+		"headers": {},
+		"pollingIntervalInMs": 30000,
+		"authenticationIntervalInMS": 3600000
+	},
+	"notifications": {
+		"console": {
+			"enabled": false,
+			"clear": true
+		},
+		"desktop": {
+			"enabled": false
+		},
+		"telegram": {
+			"enabled": true,
+			"botToken": "insert token here",
+			"chats": []
+		},
+		"ifttt": {
+			"enabled": false,
+			"webhookKey": "see README",
+			"webhookEvents": [
+				"see README"
+			]
+		},
+		"gotify": {
+			"enabled": false,
+			"url": "http://push.example.com",
+			"apptoken": "token",
+			"priority": 5
+		}
+	},
+	"messageFilter": {
+		"showUnchanged": false,
+		"showDecrease": false,
+		"showDecreaseToZero": false,
+		"showIncrease": false,
+		"showIncreaseFromZero": true
+	}
+}
