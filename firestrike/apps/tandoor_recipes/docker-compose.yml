@@ -47,7 +47,7 @@ services:
 
     
   backup-rclone:
-    image: offen/docker-volume-backup:v2.19.0
+    image: offen/docker-volume-backup:v2.20.0
     restart: always
     env_file: ./backup.env
     environment:
