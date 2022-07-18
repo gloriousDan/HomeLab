@@ -56,7 +56,7 @@ services:
       - docker-volume-backup.exec-label=nextcloud_database
 
   redis:
-    image: redis:7.0.3
+    image: redis:7.0.4
     restart: always
     networks:
       - nextcloud
