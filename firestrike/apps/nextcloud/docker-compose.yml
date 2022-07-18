@@ -15,6 +15,8 @@ volumes:
     driver: local
   db_dumps:
     driver: local
+  duplicacy_config:
+    driver: local
   rclone_azure_volume:
     # To use this install rclone plugin: 
     # rclone/docker-volume-rclone:amd64 --grant-all-permissions --alias rclone
@@ -115,23 +117,23 @@ services:
       - config:/var/www/html/config
       - data:/var/www/html/data
 
-  backup-rclone:
-    image: offen/docker-volume-backup:v2.20.0
-    restart: always
-    env_file: ./backup.env
-    environment:
-      BACKUP_CRON_EXPRESSION: "0 4 * * 1"
-      BACKUP_RETENTION_DAYS: "14"
-      BACKUP_STOP_CONTAINER_LABEL: "nextcloud"
-      EXEC_LABEL: "nextcloud_database"
-    volumes:
-      - db_dumps:/backup/nc_db:ro
-      - apps:/backup/nc_apps:ro
-      - config:/backup/nc_config:ro
-      - data:/backup/nc_data:ro
-      - rclone_azure_volume:/archive
-      - ./notifications.tmpl:/etc/dockervolumebackup/notifications.d/notifications.tmpl
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+        #backup-rclone:
+        #  image: offen/docker-volume-backup:v2.20.0
+        #  restart: always
+        #  env_file: ./backup.env
+        #  environment:
+        #    BACKUP_CRON_EXPRESSION: "0 4 * * 1"
+        #    BACKUP_RETENTION_DAYS: "14"
+        #    BACKUP_STOP_CONTAINER_LABEL: "nextcloud"
+        #    EXEC_LABEL: "nextcloud_database"
+        #  volumes:
+        #    - db_dumps:/backup/nc_db:ro
+        #    - apps:/backup/nc_apps:ro
+        #    - config:/backup/nc_config:ro
+        #    - data:/backup/nc_data:ro
+        #    - rclone_azure_volume:/archive
+        #    - ./notifications.tmpl:/etc/dockervolumebackup/notifications.d/notifications.tmpl
+        #    - /var/run/docker.sock:/var/run/docker.sock:ro
 
   backup-rclone-db:
     image: offen/docker-volume-backup:v2.20.0
@@ -146,6 +148,29 @@ services:
       - rclone_azure_volume_db:/archive
       - ./notifications_db.tmpl:/etc/dockervolumebackup/notifications.d/notifications.tmpl
       - /var/run/docker.sock:/var/run/docker.sock:ro
+  
+  backup-files-duplicacy:
+    image: azinchen/duplicacy:1.0.3
+    restart: always
+    env_file: backup_duplicacy.env
+    environment:
+      BACKUP_CRON: "0 4 * * *"
+      PRUNE_CRON: "0 6 * * *"
+      PRE_BACKUP_SCRIPT: "/pre_backup.sh"
+      POST_BACKUP_SCRIPT: "/post_backup.sh"
+      RUN_JOB_IMMEDIATELY: "yes"
+      PRUNE_KEEP_POLICIES: "1:7;7:30;30:180;0:360"
+      SNAPSHOT_ID: 1
+    volumes:
+      - db_dumps:/data/nc_db:ro
+      - apps:/data/nc_apps:ro
+      - config:/data/nc_config:ro
+      - data:/data/nc_data:ro
+      - duplicacy_config:/config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./pre_backup.sh:/pre_backup.sh
+      - ./post_backup.sh:/post_backup.sh
+
 
 networks:
   default:
